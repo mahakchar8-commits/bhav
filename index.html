@@ -883,7 +883,10 @@
         <div class="tmpl-preview" id="t-preview">Fill in the brand name above to generate your template.</div>
         <div class="tmpl-actions">
           <button class="btn btn-secondary" onclick="copyTmpl()">📋 &nbsp;Copy</button>
-          <button class="btn btn-primary" onclick="shareTmpl()">↗ &nbsp;Share</button>
+          <button class="btn btn-secondary" onclick="shareTmpl()">↗ &nbsp;Share</button>
+        </div>
+        <div style="margin-top:10px;">
+          <button class="btn btn-primary" onclick="generatePDF()">⬇ &nbsp;Download Creative PDF</button>
         </div>
         <div style="height:16px;"></div>
       </div>
@@ -1472,6 +1475,202 @@ document.getElementById('tmpl-overlay').addEventListener('click', e => {
 document.getElementById('edit-overlay').addEventListener('click', e => {
   if (e.target === document.getElementById('edit-overlay')) closeEdit();
 });
+
+/* ══════════════════════════════════════════════════════════
+   PDF GENERATOR
+══════════════════════════════════════════════════════════ */
+function escH(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function generatePDF() {
+  const company = document.getElementById('t-company').value.trim() || 'Brand Name';
+  const brief   = document.getElementById('t-brief').value.trim();
+  const u = S.user, c = S.calc, r = c.result;
+
+  if (!r || !c.contentType) { toast('⚠️ Calculate a rate first!'); return; }
+
+  const typeLabel = TYPES[c.platform].find(t => t.id === c.contentType)?.label || c.contentType;
+  const today = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+
+  const extras = [];
+  if (c.addons.exclusivity) extras.push('Brand exclusivity (30 days)');
+  if (c.addons.usage)       extras.push('Usage rights included');
+  if (c.addons.rush)        extras.push('Rush delivery (48 hrs)');
+
+  const includes = [
+    '1 ' + typeLabel + ' featuring ' + escH(company),
+    'On-brand caption + hashtags + CTA',
+    'Content delivered within 48-72 hours',
+    '1 round of free revisions',
+    ...extras,
+  ];
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bhav Rate Card — ${escH(u.name||'Creator')}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  font-family:'Space Grotesk',system-ui,sans-serif;
+  background:#0A0A0A;color:#fff;
+  -webkit-print-color-adjust:exact;
+  print-color-adjust:exact;
+}
+@page{margin:0;size:A4 portrait;}
+@media print{
+  .np{display:none!important;}
+  .spacer{display:none!important;}
+}
+.np{
+  position:fixed;top:0;left:0;right:0;z-index:9999;
+  background:#0D0D0D;border-bottom:2px solid #BAFF29;
+  padding:12px 24px;display:flex;
+  justify-content:space-between;align-items:center;
+}
+.np-hint{font-size:13px;color:#666;font-family:inherit;}
+.np-btn{
+  background:#BAFF29;color:#000;border:none;
+  padding:10px 22px;border-radius:8px;
+  font-size:14px;font-weight:800;cursor:pointer;
+  font-family:inherit;letter-spacing:0.3px;
+}
+.np-btn:active{opacity:0.85;}
+</style>
+</head>
+<body>
+
+<div class="np">
+  <span class="np-hint">Rate card preview — looks exactly like the PDF</span>
+  <button class="np-btn" onclick="window.print()">⬇ Save as PDF</button>
+</div>
+<div class="spacer" style="height:52px;"></div>
+
+<div style="width:210mm;min-height:297mm;background:#0A0A0A;display:flex;flex-direction:column;">
+
+  <div style="height:8px;background:#BAFF29;flex-shrink:0;"></div>
+
+  <div style="padding:28px 40px 0;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+      <div>
+        <div style="font-size:8px;color:#BAFF29;letter-spacing:3px;font-weight:700;margin-bottom:10px;">COLLAB PROPOSAL</div>
+        <div style="font-size:38px;font-weight:800;line-height:1;margin-bottom:8px;letter-spacing:-2px;">${escH(u.name||'Creator')}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:12px;color:#888;">@${escH(u.handle||'handle')}</span>
+          <span style="color:#2a2a2a;font-size:16px;">&middot;</span>
+          <span style="font-size:12px;color:#888;">${platLabel(c.platform)}</span>
+          <span style="background:rgba(186,255,41,0.1);border:1px solid rgba(186,255,41,0.2);border-radius:20px;padding:3px 10px;font-size:9px;font-weight:700;color:#BAFF29;">${escH(u.niche||'Creator')}</span>
+        </div>
+      </div>
+      <div style="text-align:right;flex-shrink:0;margin-left:16px;">
+        <div style="font-size:26px;font-weight:800;color:#1c1c1c;letter-spacing:-1.5px;line-height:1;">bhav</div>
+        <div style="font-size:9px;color:#444;margin-top:5px;letter-spacing:1px;">${today}</div>
+      </div>
+    </div>
+    <div style="height:3px;background:#BAFF29;"></div>
+  </div>
+
+  <div style="padding:14px 40px;background:#111;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+    <div>
+      <div style="font-size:8px;color:#555;letter-spacing:2px;margin-bottom:4px;">PREPARED FOR</div>
+      <div style="font-size:20px;font-weight:800;">${escH(company)}</div>
+      ${brief ? `<div style="font-size:11px;color:#666;margin-top:3px;">${escH(brief)}</div>` : ''}
+    </div>
+    <div style="background:#1a1a1a;border-radius:8px;padding:10px 16px;text-align:center;border:1px solid #2a2a2a;flex-shrink:0;">
+      <div style="font-size:7px;color:#555;letter-spacing:1px;margin-bottom:3px;">VALID FOR</div>
+      <div style="font-size:17px;font-weight:800;color:#BAFF29;">30 Days</div>
+    </div>
+  </div>
+
+  <div style="padding:20px 40px;flex:1;">
+
+    <div style="font-size:7px;color:#BAFF29;letter-spacing:2px;font-weight:700;margin-bottom:8px;">ABOUT ME</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:20px;">
+      <div style="background:#1C1C1C;border-radius:8px;padding:12px 14px;border-left:3px solid #BAFF29;">
+        <div style="font-size:7px;color:#555;letter-spacing:1px;margin-bottom:4px;">FOLLOWERS</div>
+        <div style="font-size:22px;font-weight:800;color:#BAFF29;letter-spacing:-0.5px;">${fmtN(u.followers)}</div>
+      </div>
+      <div style="background:#1C1C1C;border-radius:8px;padding:12px 14px;border-left:3px solid #BAFF29;">
+        <div style="font-size:7px;color:#555;letter-spacing:1px;margin-bottom:4px;">ENGAGEMENT</div>
+        <div style="font-size:22px;font-weight:800;color:#BAFF29;letter-spacing:-0.5px;">${u.engagement}%</div>
+      </div>
+      <div style="background:#1C1C1C;border-radius:8px;padding:12px 14px;">
+        <div style="font-size:7px;color:#555;letter-spacing:1px;margin-bottom:4px;">PLATFORM</div>
+        <div style="font-size:16px;font-weight:800;">${platLabel(c.platform)}</div>
+      </div>
+      <div style="background:#1C1C1C;border-radius:8px;padding:12px 14px;">
+        <div style="font-size:7px;color:#555;letter-spacing:1px;margin-bottom:4px;">NICHE</div>
+        <div style="font-size:16px;font-weight:800;">${escH(u.niche||'—')}</div>
+      </div>
+    </div>
+
+    <div style="font-size:7px;color:#BAFF29;letter-spacing:2px;font-weight:700;margin-bottom:8px;">DELIVERABLE &amp; PRICING</div>
+    <div style="background:#1C1C1C;border:1.5px solid rgba(186,255,41,0.28);border-radius:12px;padding:24px 32px;text-align:center;margin-bottom:20px;">
+      <div style="font-size:9px;color:#555;letter-spacing:3px;margin-bottom:10px;">${typeLabel.toUpperCase()}</div>
+      <div style="font-size:56px;font-weight:800;color:#BAFF29;letter-spacing:-4px;line-height:1;margin-bottom:8px;">₹${fmtN(r.recommended)}</div>
+      <div style="font-size:12px;color:#555;margin-bottom:14px;">Negotiable range: ₹${fmtN(r.min)} – ₹${fmtN(r.max)}</div>
+      <div style="height:1px;background:#262626;margin:0 auto 12px;width:60%;"></div>
+      <div style="display:flex;justify-content:center;gap:28px;">
+        <div style="text-align:center;"><div style="font-size:12px;font-weight:700;">${fmtN(u.followers)}</div><div style="font-size:8px;color:#555;margin-top:2px;">Followers</div></div>
+        <div style="text-align:center;"><div style="font-size:12px;font-weight:700;color:#BAFF29;">${u.engagement}%</div><div style="font-size:8px;color:#555;margin-top:2px;">Engagement</div></div>
+        <div style="text-align:center;"><div style="font-size:12px;font-weight:700;">${engMult(u.engagement)}&times;</div><div style="font-size:8px;color:#555;margin-top:2px;">Multiplier</div></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div>
+        <div style="font-size:7px;color:#BAFF29;letter-spacing:2px;font-weight:700;margin-bottom:8px;">WHAT'S INCLUDED</div>
+        ${includes.map(item=>`
+        <div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;">
+          <span style="color:#BAFF29;font-weight:800;font-size:12px;flex-shrink:0;line-height:1.5;">✓</span>
+          <span style="font-size:11px;color:#ccc;line-height:1.5;">${item}</span>
+        </div>`).join('')}
+      </div>
+      <div>
+        <div style="font-size:7px;color:#BAFF29;letter-spacing:2px;font-weight:700;margin-bottom:8px;">PAYMENT TERMS</div>
+        ${[['50% advance','to confirm the booking'],['50% on delivery','after content approval'],['Preferred','UPI / Bank Transfer'],['Platform rights','included in pricing']].map(([k,v])=>`
+        <div style="display:flex;align-items:flex-start;gap:7px;margin-bottom:7px;">
+          <span style="color:#BAFF29;font-weight:800;font-size:12px;flex-shrink:0;line-height:1.5;">→</span>
+          <span style="font-size:11px;color:#ccc;line-height:1.5;"><b style="color:#fff;">${k}</b> ${v}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+  </div>
+
+  <div style="background:#111;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid #1e1e1e;">
+    <div>
+      <div style="font-size:14px;font-weight:800;margin-bottom:2px;">${escH(u.name||'Creator')}</div>
+      <div style="font-size:10px;color:#555;">@${escH(u.handle||'handle')} &middot; ${platLabel(c.platform)}</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:16px;font-weight:800;color:#BAFF29;">bhav ✦</div>
+      <div style="font-size:8px;color:#444;letter-spacing:2px;margin-top:2px;">KNOW YOUR WORTH</div>
+    </div>
+  </div>
+
+  <div style="height:8px;background:#BAFF29;flex-shrink:0;"></div>
+
+</div>
+</body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const win  = window.open(url, '_blank');
+
+  if (win) {
+    toast('✓ Tap "Save as PDF" in the new tab!');
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
+  } else {
+    toast('⚠️ Allow popups, then try again');
+    URL.revokeObjectURL(url);
+  }
+}
 
 /* ══════════════════════════════════════════════════════════
    INIT
