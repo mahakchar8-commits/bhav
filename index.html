@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0A0A0A">
+  <title>Bhav — Know Your Worth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ============ RESET & ROOT ============ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --bg: #0A0A0A;
+      --surface: #111111;
+      --card: #1C1C1C;
+      --card2: #242424;
+      --accent: #BAFF29;
+      --accent-dim: rgba(186,255,41,0.10);
+      --accent-border: rgba(186,255,41,0.25);
+      --text: #FFFFFF;
+      --muted: #888888;
+      --faint: #333333;
+      --border: #262626;
+      --success: #00E699;
+      --danger: #FF5050;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #000;
+      color: var(--text);
+      overflow: hidden;
+    }
+    #app {
+      max-width: 430px;
+      width: 100%;
+      height: 100dvh;
+      margin: 0 auto;
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    /* ============ SCREENS ============ */
+    .screen {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      transition: transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(24px);
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .screen::-webkit-scrollbar { display: none; }
+    .screen.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+    .screen.slide-left { opacity: 0; transform: translateX(-24px); }
+
+    /* ============ SPLASH ============ */
+    #screen-splash {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 14px; background: var(--bg);
+    }
+    .splash-logo {
+      font-size: 72px; font-weight: 800;
+      letter-spacing: -5px; color: var(--text);
+      line-height: 1;
+    }
+    .splash-logo span { color: var(--accent); }
+    .splash-tagline {
+      font-size: 13px; color: var(--muted);
+      letter-spacing: 4px; text-transform: uppercase;
+      font-weight: 500;
+    }
+    .splash-loader {
+      display: flex; gap: 6px; margin-top: 8px;
+    }
+    .splash-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+    }
+    .splash-dot:nth-child(1) { animation: blink 1.2s 0s infinite; }
+    .splash-dot:nth-child(2) { animation: blink 1.2s 0.2s infinite; }
+    .splash-dot:nth-child(3) { animation: blink 1.2s 0.4s infinite; }
+    @keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
+
+    /* ============ ONBOARDING ============ */
+    .ob-wrap {
+      padding: 56px 24px 40px;
+      min-height: 100dvh;
+      display: flex; flex-direction: column;
+    }
+    .ob-progress {
+      display: flex; gap: 6px; margin-bottom: 44px;
+    }
+    .ob-bar {
+      height: 3px; flex: 1; border-radius: 2px;
+      background: var(--border); transition: background 0.3s;
+    }
+    .ob-bar.active { background: var(--accent); }
+    .ob-headline {
+      font-size: 32px; font-weight: 800;
+      line-height: 1.15; margin-bottom: 8px;
+    }
+    .ob-sub {
+      font-size: 15px; color: var(--muted); margin-bottom: 36px;
+    }
+    .ob-footer { margin-top: auto; padding-top: 20px; }
+
+    /* ============ INPUTS ============ */
+    .label {
+      font-size: 11px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: 1.5px; margin-bottom: 8px;
+    }
+    .field {
+      width: 100%; background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 16px 18px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; color: var(--text);
+      outline: none; transition: border-color 0.2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .field:focus { border-color: var(--accent); }
+    .field::placeholder { color: var(--faint); }
+    .field-hint {
+      font-size: 12px; color: var(--muted);
+      margin-top: 7px; line-height: 1.4;
+    }
+    .input-group { margin-bottom: 18px; }
+
+    /* ============ BUTTONS ============ */
+    .btn {
+      width: 100%; padding: 17px;
+      border-radius: 16px; border: none;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.18s;
+      letter-spacing: 0.2px; display: flex;
+      align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn:active { transform: scale(0.97); opacity: 0.9; }
+    .btn-primary { background: var(--accent); color: #0A0A0A; }
+    .btn-secondary {
+      background: var(--card); color: var(--text);
+      border: 1.5px solid var(--border);
+    }
+    .btn-danger { background: rgba(255,80,80,0.12); color: var(--danger); border: 1.5px solid rgba(255,80,80,0.2); }
+
+    /* ============ PILLS ============ */
+    .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pill {
+      padding: 9px 16px; border-radius: 50px;
+      background: var(--card); border: 1.5px solid var(--border);
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: all 0.18s; user-select: none;
+    }
+    .pill:active { transform: scale(0.95); }
+    .pill.on {
+      background: var(--accent-dim);
+      border-color: var(--accent); color: var(--accent);
+    }
+
+    /* ============ PLATFORM SELECTOR GRID ============ */
+    .plat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .plat-card {
+      background: var(--card); border: 2px solid var(--border);
+      border-radius: 18px; padding: 22px 16px;
+      cursor: pointer; transition: all 0.18s;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 10px;
+    }
+    .plat-card:active { transform: scale(0.96); }
+    .plat-card.on { border-color: var(--accent); background: var(--accent-dim); }
+    .plat-icon { font-size: 30px; line-height: 1; }
+    .plat-name { font-size: 14px; font-weight: 700; }
+    .plat-tick {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--accent); color: #000;
+      font-size: 12px; font-weight: 800;
+      display: none; align-items: center; justify-content: center;
+    }
+    .plat-card.on .plat-tick { display: flex; }
+
+    /* ============ HOME ============ */
+    #screen-home { padding-bottom: 90px; }
+    .home-header {
+      padding: 52px 24px 20px;
+      background: linear-gradient(180deg, var(--surface) 0%, transparent 100%);
+    }
+    .home-sup {
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px;
+    }
+    .home-name {
+      font-size: 28px; font-weight: 800; line-height: 1.1;
+    }
+    .home-name em { color: var(--accent); font-style: normal; }
+
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px; padding: 0 24px; margin-bottom: 24px;
+    }
+    .stat-chip {
+      background: var(--card); border-radius: 14px;
+      padding: 14px 8px; text-align: center;
+    }
+    .stat-v {
+      font-size: 18px; font-weight: 800; color: var(--accent);
+      line-height: 1; margin-bottom: 4px;
+    }
+    .stat-l { font-size: 11px; color: var(--muted); font-weight: 500; }
+
+    .cta-section { padding: 0 24px; margin-bottom: 28px; }
+    .cta-card {
+      background: var(--card);
+      border: 1.5px solid var(--accent-border);
+      border-radius: 22px; padding: 22px 22px 20px;
+      position: relative; overflow: hidden;
+    }
+    .cta-card::before {
+      content: ''; position: absolute;
+      top: -40px; right: -40px;
+      width: 120px; height: 120px;
+      background: radial-gradient(circle, rgba(186,255,41,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-title { font-size: 20px; font-weight: 800; margin-bottom: 5px; }
+    .cta-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+
+    .sec-head {
+      padding: 0 24px; display: flex;
+      justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .sec-title { font-size: 16px; font-weight: 700; }
+    .sec-action {
+      font-size: 13px; color: var(--muted);
+      cursor: pointer; font-weight: 600;
+    }
+
+    .history-list { padding: 0 24px; display: flex; flex-direction: column; gap: 8px; }
+    .hist-card {
+      background: var(--card); border-radius: 16px;
+      padding: 14px 16px; display: flex;
+      justify-content: space-between; align-items: center;
+      cursor: pointer; transition: background 0.15s;
+    }
+    .hist-card:active { background: var(--card2); }
+    .hist-left { display: flex; align-items: center; gap: 12px; }
+    .hist-icon {
+      width: 42px; height: 42px; border-radius: 12px;
+      background: var(--card2); font-size: 20px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .hist-type { font-size: 14px; font-weight: 700; }
+    .hist-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .hist-rate { font-size: 17px; font-weight: 800; color: var(--accent); }
+
+    .empty-state { padding: 36px 24px; text-align: center; }
+    .empty-emoji { font-size: 44px; margin-bottom: 14px; }
+    .empty-t { font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+    .empty-s { font-size: 13px; color: var(--muted); }
+
+    /* ============ CALCULATOR ============ */
+    #screen-calc { padding-bottom: 100px; }
+    .calc-header {
+      padding: 52px 24px 20px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .back-btn {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: var(--card); border: none;
+      color: var(--text); font-size: 20px;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.18s; flex-shrink: 0;
+    }
+    .back-btn:active { transform: scale(0.92); }
+    .calc-title { font-size: 22px; font-weight: 800; }
+
+    .calc-sec { padding: 0 24px; margin-bottom: 22px; }
+
+    .plat-pills { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+    .plat-pills::-webkit-scrollbar { display: none; }
+    .plat-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--card); border: 2px solid var(--border);
+      border-radius: 50px; padding: 10px 16px;
+      white-space: nowrap; cursor: pointer;
+      font-size: 13px; font-weight: 700;
+      transition: all 0.18s; flex-shrink: 0;
+    }
+    .plat-pill:active { transform: scale(0.94); }
+    .plat-pill.on { border-color: var(--accent); background: var(--accent-dim); color: var(--accent); }
+
+    .ct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ct-card {
+      background: var(--card); border: 2px solid var(--border);
+      border-radius: 16px; padding: 16px 14px;
+      cursor: pointer; transition: all 0.18s;
+    }
+    .ct-card:active { transform: scale(0.96); }
+    .ct-card.on { border-color: var(--accent); background: var(--accent-dim); }
+    .ct-icon { font-size: 24px; margin-bottom: 8px; }
+    .ct-name { font-size: 14px; font-weight: 700; }
+    .ct-desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .rate-box {
+      margin: 0 24px 20px;
+      background: var(--card);
+      border: 1.5px solid var(--accent-border);
+      border-radius: 22px; padding: 26px 22px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .rate-box::after {
+      content: ''; position: absolute;
+      bottom: -30px; left: 50%; transform: translateX(-50%);
+      width: 200px; height: 80px;
+      background: radial-gradient(ellipse, rgba(186,255,41,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .rate-prompt { font-size: 14px; color: var(--muted); padding: 10px 0; }
+    .rate-lbl {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .rate-num {
+      font-size: 48px; font-weight: 800;
+      color: var(--accent); letter-spacing: -3px;
+      line-height: 1; margin-bottom: 6px;
+    }
+    .rate-range { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+    .rate-range b { color: var(--text); font-weight: 700; }
+    .rate-chips {
+      display: flex; gap: 8px; justify-content: center;
+    }
+    .rate-chip {
+      background: var(--card2); border-radius: 10px;
+      padding: 8px 12px; text-align: center;
+    }
+    .rc-v { font-size: 15px; font-weight: 700; }
+    .rc-l { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .rc-v.accent { color: var(--accent); }
+
+    .addons-card {
+      background: var(--card); border-radius: 18px; overflow: hidden;
+    }
+    .addon-row {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .addon-row:last-child { border-bottom: none; }
+    .addon-info {}
+    .addon-t { font-size: 15px; font-weight: 700; }
+    .addon-s { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .toggle {
+      width: 48px; height: 28px; border-radius: 14px;
+      background: var(--border); cursor: pointer;
+      position: relative; transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle-knob {
+      position: absolute; top: 4px; left: 4px;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: white; transition: transform 0.2s;
+    }
+    .toggle.on .toggle-knob { transform: translateX(20px); }
+
+    /* ============ PROFILE ============ */
+    #screen-profile { padding: 52px 24px 100px; }
+    .profile-card {
+      background: var(--card); border-radius: 22px;
+      padding: 28px 22px; text-align: center; margin-bottom: 22px;
+    }
+    .avatar {
+      width: 76px; height: 76px; border-radius: 50%;
+      background: var(--accent-dim); border: 2.5px solid var(--accent);
+      margin: 0 auto 14px; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 30px; font-weight: 800; color: var(--accent);
+    }
+    .profile-name { font-size: 24px; font-weight: 800; margin-bottom: 4px; }
+    .profile-handle { font-size: 14px; color: var(--muted); margin-bottom: 14px; }
+    .platform-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--card2); border-radius: 50px;
+      padding: 7px 16px; font-size: 13px; font-weight: 700;
+    }
+
+    .settings-sec { margin-bottom: 22px; }
+    .settings-title {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px;
+    }
+    .settings-card { background: var(--card); border-radius: 18px; overflow: hidden; }
+    .srow {
+      display: flex; align-items: center;
+      justify-content: space-between; padding: 15px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .srow:last-child { border-bottom: none; }
+    .srow:active { background: var(--card2); }
+    .srow-left { display: flex; align-items: center; gap: 12px; }
+    .srow-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--card2); font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .srow-t { font-size: 15px; font-weight: 700; }
+    .srow-v { font-size: 14px; color: var(--muted); }
+    .srow-chev { color: var(--faint); font-size: 20px; line-height: 1; }
+
+    .bhav-footer {
+      text-align: center; padding-top: 12px;
+      font-size: 11px; color: var(--faint);
+      letter-spacing: 2px; text-transform: uppercase;
+    }
+
+    /* ============ BOTTOM NAV ============ */
+    #bottom-nav {
+      position: fixed; bottom: 0;
+      left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 430px;
+      background: rgba(12,12,12,0.95);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-top: 1px solid var(--border);
+      display: none; grid-template-columns: 1fr 1fr 1fr;
+      padding: 8px 0 env(safe-area-inset-bottom, 20px);
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 4px;
+      cursor: pointer; padding: 6px 0;
+      transition: all 0.2s;
+    }
+    .nav-item:active { transform: scale(0.88); }
+    .nav-icon { font-size: 23px; line-height: 1; }
+    .nav-lbl {
+      font-size: 10px; font-weight: 700;
+      color: var(--muted); letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .nav-item.on .nav-lbl { color: var(--accent); }
+
+    /* ============ MODALS ============ */
+    .overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 100; display: flex;
+      align-items: flex-end; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .overlay.open { opacity: 1; pointer-events: all; }
+    .sheet {
+      width: 100%; max-width: 430px;
+      background: var(--surface);
+      border-radius: 28px 28px 0 0;
+      padding: 0 0 env(safe-area-inset-bottom, 24px);
+      max-height: 92dvh; overflow-y: auto;
+      transform: translateY(100%);
+      transition: transform 0.36s cubic-bezier(0.4,0,0.2,1);
+      scrollbar-width: none;
+    }
+    .sheet::-webkit-scrollbar { display: none; }
+    .overlay.open .sheet { transform: translateY(0); }
+    .sheet-handle {
+      width: 38px; height: 4px; border-radius: 2px;
+      background: var(--border); margin: 14px auto 0;
+    }
+    .sheet-header {
+      padding: 18px 22px 14px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .sheet-title { font-size: 18px; font-weight: 800; }
+    .sheet-close {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--card); border: none;
+      color: var(--muted); font-size: 16px;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .sheet-body { padding: 0 22px 8px; }
+
+    .tmpl-preview {
+      background: var(--card); border-radius: 16px;
+      padding: 18px; font-size: 13px; line-height: 1.75;
+      color: var(--text); white-space: pre-wrap;
+      font-family: 'Space Grotesk', monospace;
+      margin-bottom: 16px;
+      max-height: 260px; overflow-y: auto;
+      border: 1px solid var(--border);
+      scrollbar-width: none;
+    }
+    .tmpl-preview::-webkit-scrollbar { display: none; }
+    .tmpl-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* ============ TOAST ============ */
+    #toast {
+      position: fixed; top: 56px; left: 50%;
+      transform: translateX(-50%) translateY(-16px);
+      background: var(--card);
+      border: 1px solid var(--accent-border);
+      border-radius: 50px; padding: 11px 20px;
+      font-size: 14px; font-weight: 700;
+      z-index: 300; opacity: 0;
+      transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+      white-space: nowrap; pointer-events: none;
+    }
+    #toast.show {
+      opacity: 1; transform: translateX(-50%) translateY(0);
+    }
+
+    /* ============ UTILS ============ */
+    .divider { height: 1px; background: var(--border); margin: 18px 0; }
+    .mb8 { margin-bottom: 8px; }
+    .mb16 { margin-bottom: 16px; }
+    .mb20 { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOAST -->
+  <div id="toast">✓ Done</div>
+
+  <!-- ═══════════════ SPLASH ═══════════════ -->
+  <div class="screen active" id="screen-splash">
+    <div id="splash">
+      <div class="splash-logo">bh<span>a</span>v</div>
+      <div class="splash-tagline">Know Your Worth</div>
+      <div class="splash-loader">
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ONBOARDING 1 — NAME ═══════════════ -->
+  <div class="screen" id="screen-ob1">
+    <div class="ob-wrap">
+      <div class="ob-progress">
+        <div class="ob-bar active"></div>
+        <div class="ob-bar"></div>
+        <div class="ob-bar"></div>
+      </div>
+      <div class="ob-headline">Hey creator! 👋<br>What's your name?</div>
+      <div class="ob-sub">We personalise your rate card with this.</div>
+
+      <div class="input-group">
+        <div class="label">Your Name</div>
+        <input class="field" id="f-name" type="text" placeholder="e.g. Priya Sharma" autocomplete="off" />
+      </div>
+      <div class="input-group">
+        <div class="label">Your Handle</div>
+        <input class="field" id="f-handle" type="text" placeholder="@yourhandle" autocomplete="off" />
+      </div>
+      <div class="input-group mb8">
+        <div class="label mb8">Your Niche</div>
+        <div class="pill-group" id="niche-pills">
+          <div class="pill" data-niche="Fashion">👗 Fashion</div>
+          <div class="pill" data-niche="Tech">💻 Tech</div>
+          <div class="pill" data-niche="Food">🍜 Food</div>
+          <div class="pill" data-niche="Travel">✈️ Travel</div>
+          <div class="pill" data-niche="Fitness">💪 Fitness</div>
+          <div class="pill" data-niche="Beauty">💄 Beauty</div>
+          <div class="pill" data-niche="Gaming">🎮 Gaming</div>
+          <div class="pill" data-niche="Finance">📈 Finance</div>
+          <div class="pill" data-niche="Lifestyle">✨ Lifestyle</div>
+          <div class="pill" data-niche="Education">📚 Education</div>
+        </div>
+      </div>
+
+      <div class="ob-footer">
+        <button class="btn btn-primary" onclick="ob1Next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ONBOARDING 2 — PLATFORM ═══════════════ -->
+  <div class="screen" id="screen-ob2">
+    <div class="ob-wrap">
+      <div class="ob-progress">
+        <div class="ob-bar active"></div>
+        <div class="ob-bar active"></div>
+        <div class="ob-bar"></div>
+      </div>
+      <div class="ob-headline">Where do you<br>create? 🔥</div>
+      <div class="ob-sub">Pick your main platform.</div>
+
+      <div class="plat-grid">
+        <div class="plat-card" data-plat="instagram">
+          <div class="plat-icon">📸</div>
+          <div class="plat-name">Instagram</div>
+          <div class="plat-tick">✓</div>
+        </div>
+        <div class="plat-card" data-plat="youtube">
+          <div class="plat-icon">▶️</div>
+          <div class="plat-name">YouTube</div>
+          <div class="plat-tick">✓</div>
+        </div>
+        <div class="plat-card" data-plat="tiktok">
+          <div class="plat-icon">🎵</div>
+          <div class="plat-name">TikTok</div>
+          <div class="plat-tick">✓</div>
+        </div>
+        <div class="plat-card" data-plat="twitter">
+          <div class="plat-icon">𝕏</div>
+          <div class="plat-name">Twitter / X</div>
+          <div class="plat-tick">✓</div>
+        </div>
+      </div>
+
+      <div class="ob-footer">
+        <button class="btn btn-primary" onclick="ob2Next()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ONBOARDING 3 — STATS ═══════════════ -->
+  <div class="screen" id="screen-ob3">
+    <div class="ob-wrap">
+      <div class="ob-progress">
+        <div class="ob-bar active"></div>
+        <div class="ob-bar active"></div>
+        <div class="ob-bar active"></div>
+      </div>
+      <div class="ob-headline">Tell us your<br>numbers 📊</div>
+      <div class="ob-sub">Honest data = accurate rate. We got you.</div>
+
+      <div class="input-group">
+        <div class="label">Followers / Subscribers</div>
+        <input class="field" id="f-followers" type="number" placeholder="e.g. 50000" inputmode="numeric" />
+      </div>
+      <div class="input-group">
+        <div class="label">Engagement Rate (%)</div>
+        <input class="field" id="f-engagement" type="number" placeholder="e.g. 4.5" step="0.1" inputmode="decimal" />
+        <div class="field-hint">💡 (Avg. Likes + Comments) ÷ Followers × 100</div>
+      </div>
+
+      <div class="ob-footer">
+        <button class="btn btn-primary" onclick="ob3Finish()">Let's Go 🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ HOME ═══════════════ -->
+  <div class="screen" id="screen-home">
+    <div class="home-header">
+      <div class="home-sup">Welcome back,</div>
+      <div class="home-name" id="h-name">Creator <em>✦</em></div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-chip">
+        <div class="stat-v" id="h-followers">—</div>
+        <div class="stat-l">Followers</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-v" id="h-eng">—</div>
+        <div class="stat-l">Engagement</div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-v" id="h-plat-icon">📸</div>
+        <div class="stat-l" id="h-plat-label">Platform</div>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <div class="cta-card">
+        <div class="cta-title">Got a deal? 🤑</div>
+        <div class="cta-sub">Tell us the collab details — we'll tell you what to charge.</div>
+        <button class="btn btn-primary" onclick="goTo('calc')">Calculate My Rate →</button>
+      </div>
+    </div>
+
+    <div class="sec-head">
+      <div class="sec-title">Recent Rates</div>
+      <div class="sec-action" onclick="clearHistory()">Clear all</div>
+    </div>
+    <div class="history-list" id="history-list">
+      <div class="empty-state">
+        <div class="empty-emoji">💸</div>
+        <div class="empty-t">No rates yet</div>
+        <div class="empty-s">Hit "Calculate My Rate" above to get started!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ CALCULATOR ═══════════════ -->
+  <div class="screen" id="screen-calc">
+    <div class="calc-header">
+      <button class="back-btn" onclick="goTo('home')">←</button>
+      <div class="calc-title">Rate Calculator</div>
+    </div>
+
+    <div class="calc-sec">
+      <div class="label mb8">Platform</div>
+      <div class="plat-pills" id="calc-plat-pills">
+        <div class="plat-pill on" data-cp="instagram">📸 Instagram</div>
+        <div class="plat-pill" data-cp="youtube">▶️ YouTube</div>
+        <div class="plat-pill" data-cp="tiktok">🎵 TikTok</div>
+        <div class="plat-pill" data-cp="twitter">𝕏 Twitter/X</div>
+      </div>
+    </div>
+
+    <div class="calc-sec">
+      <div class="label mb8">Content Type</div>
+      <div class="ct-grid" id="ct-grid"></div>
+    </div>
+
+    <div class="rate-box" id="rate-box">
+      <div class="rate-prompt">← Pick a content type to see your rate</div>
+    </div>
+
+    <div class="calc-sec">
+      <div class="label mb8">Add-ons</div>
+      <div class="addons-card">
+        <div class="addon-row">
+          <div class="addon-info">
+            <div class="addon-t">Exclusivity</div>
+            <div class="addon-s">No similar brands for 30 days &nbsp;+20%</div>
+          </div>
+          <div class="toggle" id="tog-excl" onclick="toggleAddon('exclusivity')">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="addon-row">
+          <div class="addon-info">
+            <div class="addon-t">Usage Rights</div>
+            <div class="addon-s">Brand can reuse your content &nbsp;+30%</div>
+          </div>
+          <div class="toggle" id="tog-usage" onclick="toggleAddon('usage')">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+        <div class="addon-row">
+          <div class="addon-info">
+            <div class="addon-t">Rush Delivery</div>
+            <div class="addon-s">Deliver within 48 hours &nbsp;+25%</div>
+          </div>
+          <div class="toggle" id="tog-rush" onclick="toggleAddon('rush')">
+            <div class="toggle-knob"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding:0 24px;">
+      <button class="btn btn-primary" id="gen-btn"
+        style="opacity:0.35;pointer-events:none;"
+        onclick="openTemplate()">
+        📄 &nbsp;Generate Price Template
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ PROFILE ═══════════════ -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-card">
+      <div class="avatar" id="p-avatar">P</div>
+      <div class="profile-name" id="p-name">Creator</div>
+      <div class="profile-handle" id="p-handle">@handle</div>
+      <div class="platform-badge" id="p-plat">📸 Instagram</div>
+    </div>
+
+    <div class="settings-sec">
+      <div class="settings-title">My Stats</div>
+      <div class="settings-card">
+        <div class="srow" onclick="openEdit('followers')">
+          <div class="srow-left">
+            <div class="srow-icon">👥</div>
+            <div class="srow-t">Followers</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="srow-v" id="p-followers">—</div>
+            <div class="srow-chev">›</div>
+          </div>
+        </div>
+        <div class="srow" onclick="openEdit('engagement')">
+          <div class="srow-left">
+            <div class="srow-icon">💫</div>
+            <div class="srow-t">Engagement Rate</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="srow-v" id="p-eng">—</div>
+            <div class="srow-chev">›</div>
+          </div>
+        </div>
+        <div class="srow" onclick="openEdit('niche')">
+          <div class="srow-left">
+            <div class="srow-icon">🎯</div>
+            <div class="srow-t">Niche</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="srow-v" id="p-niche">—</div>
+            <div class="srow-chev">›</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="settings-sec">
+      <div class="settings-title">Account</div>
+      <div class="settings-card">
+        <div class="srow" onclick="openEdit('name')">
+          <div class="srow-left">
+            <div class="srow-icon">✏️</div>
+            <div class="srow-t">Edit Name & Handle</div>
+          </div>
+          <div class="srow-chev">›</div>
+        </div>
+        <div class="srow" onclick="openEdit('platform')">
+          <div class="srow-left">
+            <div class="srow-icon">📱</div>
+            <div class="srow-t">Change Platform</div>
+          </div>
+          <div class="srow-chev">›</div>
+        </div>
+        <div class="srow" onclick="doReset()">
+          <div class="srow-left">
+            <div class="srow-icon" style="color:var(--danger)">🔄</div>
+            <div class="srow-t" style="color:var(--danger)">Reset App</div>
+          </div>
+          <div class="srow-chev">›</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bhav-footer">Bhav v1.0 &nbsp;•&nbsp; Know Your Worth</div>
+  </div>
+
+  <!-- ═══════════════ BOTTOM NAV ═══════════════ -->
+  <div id="bottom-nav">
+    <div class="nav-item on" id="nav-home" onclick="goTo('home')">
+      <div class="nav-icon">🏠</div>
+      <div class="nav-lbl">Home</div>
+    </div>
+    <div class="nav-item" id="nav-calc" onclick="goTo('calc')">
+      <div class="nav-icon">💰</div>
+      <div class="nav-lbl">Calculate</div>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="goTo('profile')">
+      <div class="nav-icon">👤</div>
+      <div class="nav-lbl">Profile</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ TEMPLATE MODAL ═══════════════ -->
+  <div class="overlay" id="tmpl-overlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title">📄 Price Template</div>
+        <button class="sheet-close" onclick="closeTemplate()">✕</button>
+      </div>
+      <div class="sheet-body">
+        <div class="input-group">
+          <div class="label">Brand / Company Name</div>
+          <input class="field" id="t-company" type="text" placeholder="e.g. Myntra, Boat, Nykaa…" oninput="renderTemplate()" />
+        </div>
+        <div class="input-group mb16">
+          <div class="label">Campaign Brief (optional)</div>
+          <input class="field" id="t-brief" type="text" placeholder="e.g. Summer collection launch" oninput="renderTemplate()" />
+        </div>
+        <div class="label mb8">Preview</div>
+        <div class="tmpl-preview" id="t-preview">Fill in the brand name above to generate your template.</div>
+        <div class="tmpl-actions">
+          <button class="btn btn-secondary" onclick="copyTmpl()">📋 &nbsp;Copy</button>
+          <button class="btn btn-primary" onclick="shareTmpl()">↗ &nbsp;Share</button>
+        </div>
+        <div style="height:16px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ EDIT MODAL ═══════════════ -->
+  <div class="overlay" id="edit-overlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-title" id="edit-title">Edit</div>
+        <button class="sheet-close" onclick="closeEdit()">✕</button>
+      </div>
+      <div class="sheet-body" id="edit-body"></div>
+    </div>
+  </div>
+
+</div><!-- #app -->
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   STATE
+══════════════════════════════════════════════════════════ */
+const INIT = {
+  done: false,
+  user: { name:'', handle:'', niche:'', platform:'instagram', followers:0, engagement:0 },
+  calc: { platform:'instagram', contentType:null, addons:{exclusivity:false,usage:false,rush:false}, result:null },
+  history: [],
+};
+let S = deep(INIT);
+
+function deep(o) { return JSON.parse(JSON.stringify(o)); }
+function save()  { localStorage.setItem('bhav2', JSON.stringify(S)); }
+function load() {
+  try {
+    const r = localStorage.getItem('bhav2');
+    if (r) S = JSON.parse(r);
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════════════════════
+   CONTENT TYPES DATA
+══════════════════════════════════════════════════════════ */
+const TYPES = {
+  instagram: [
+    {id:'story',    label:'Story',     icon:'⭕', desc:'15-sec story'},
+    {id:'post',     label:'Feed Post', icon:'🖼️', desc:'Static / carousel'},
+    {id:'reel',     label:'Reel',      icon:'🎬', desc:'15-90 sec video'},
+    {id:'carousel', label:'Carousel',  icon:'📑', desc:'Multi-slide post'},
+  ],
+  youtube: [
+    {id:'mention',    label:'Mention',    icon:'🗣️', desc:'< 30-sec callout'},
+    {id:'integration',label:'Integration',icon:'🔗', desc:'30-60 sec slot'},
+    {id:'dedicated',  label:'Dedicated',  icon:'🎥', desc:'Full sponsored vid'},
+  ],
+  tiktok: [
+    {id:'video',  label:'Video',        icon:'🎵', desc:'15-60 sec video'},
+    {id:'series', label:'3-Vid Series', icon:'🎞️', desc:'Series pack deal'},
+  ],
+  twitter: [
+    {id:'tweet',  label:'Tweet',  icon:'🐦', desc:'Single tweet post'},
+    {id:'thread', label:'Thread', icon:'📝', desc:'Multi-tweet thread'},
+  ],
+};
+
+/* ══════════════════════════════════════════════════════════
+   RATE ENGINE
+══════════════════════════════════════════════════════════ */
+const BASE_PER_1K = {
+  instagram: {story:45, post:90, reel:140, carousel:105},
+  youtube:   {mention:190, integration:340, dedicated:580},
+  tiktok:    {video:70, series:180},
+  twitter:   {tweet:28, thread:58},
+};
+const FLOORS = {
+  instagram: {story:500, post:1000, reel:2000, carousel:1200},
+  youtube:   {mention:2500, integration:7000, dedicated:14000},
+  tiktok:    {video:800, series:2500},
+  twitter:   {tweet:300, thread:650},
+};
+
+function engMult(e) {
+  if (e < 1)  return 0.70;
+  if (e < 2)  return 0.85;
+  if (e < 4)  return 1.00;
+  if (e < 7)  return 1.30;
+  if (e < 12) return 1.60;
+  return 2.00;
+}
+
+function calcRate(platform, type, followers, eng, addons) {
+  const per1k = BASE_PER_1K[platform][type];
+  let base = (followers / 1000) * per1k * engMult(eng);
+  base = Math.max(base, FLOORS[platform][type]);
+
+  let mult = 1;
+  if (addons.exclusivity) mult += 0.20;
+  if (addons.usage)       mult += 0.30;
+  if (addons.rush)        mult += 0.25;
+
+  const rec = round100(base * mult);
+  return { min: round100(rec * 0.75), recommended: rec, max: round100(rec * 1.38) };
+}
+
+function round100(n) { return Math.round(n / 100) * 100; }
+
+/* ══════════════════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════════════════ */
+let cur = 'splash';
+const MAIN = ['home','calc','profile'];
+
+function goTo(id) {
+  const prev = document.getElementById('screen-' + cur);
+  const next = document.getElementById('screen-' + id);
+  if (!next || cur === id) return;
+  if (prev) { prev.classList.remove('active'); }
+  next.classList.add('active');
+  cur = id;
+  // Bottom nav
+  const nav = document.getElementById('bottom-nav');
+  nav.style.display = MAIN.includes(id) ? 'grid' : 'none';
+  MAIN.forEach(s => document.getElementById('nav-'+s)?.classList.remove('on'));
+  if (MAIN.includes(id)) document.getElementById('nav-'+id)?.classList.add('on');
+  // Refresh
+  if (id === 'home')    refreshHome();
+  if (id === 'calc')    refreshCalc();
+  if (id === 'profile') refreshProfile();
+}
+
+/* ══════════════════════════════════════════════════════════
+   ONBOARDING
+══════════════════════════════════════════════════════════ */
+// Niche pills
+document.querySelectorAll('#niche-pills .pill').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('#niche-pills .pill').forEach(x => x.classList.remove('on'));
+    p.classList.add('on');
+    S.user.niche = p.dataset.niche;
+  });
+});
+
+// Platform cards (ob2)
+document.querySelectorAll('.plat-card').forEach(c => {
+  c.addEventListener('click', () => {
+    document.querySelectorAll('.plat-card').forEach(x => x.classList.remove('on'));
+    c.classList.add('on');
+    S.user.platform = c.dataset.plat;
+  });
+});
+
+function ob1Next() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('⚠️ Enter your name first!'); return; }
+  S.user.name   = name;
+  S.user.handle = document.getElementById('f-handle').value.trim().replace(/^@/,'');
+  goTo('ob2');
+}
+
+function ob2Next() {
+  if (!S.user.platform) { toast('⚠️ Pick a platform!'); return; }
+  goTo('ob3');
+}
+
+function ob3Finish() {
+  const fol = parseInt(document.getElementById('f-followers').value);
+  const eng = parseFloat(document.getElementById('f-engagement').value);
+  if (!fol || fol < 100) { toast('⚠️ Enter a valid followers count!'); return; }
+  if (isNaN(eng) || eng < 0) { toast('⚠️ Enter a valid engagement rate!'); return; }
+  S.user.followers  = fol;
+  S.user.engagement = eng;
+  S.calc.platform   = S.user.platform;
+  S.done = true;
+  save();
+  goTo('home');
+}
+
+/* ══════════════════════════════════════════════════════════
+   HOME
+══════════════════════════════════════════════════════════ */
+function refreshHome() {
+  const u = S.user;
+  document.getElementById('h-name').innerHTML = `${u.name||'Creator'} <em>✦</em>`;
+  document.getElementById('h-followers').textContent  = fmtN(u.followers);
+  document.getElementById('h-eng').textContent        = (u.engagement||0) + '%';
+  document.getElementById('h-plat-icon').textContent  = platIcon(u.platform);
+  document.getElementById('h-plat-label').textContent = platLabel(u.platform);
+  renderHistory();
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  const h  = (S.history||[]).slice().reverse().slice(0,8);
+  if (!h.length) {
+    el.innerHTML = `<div class="empty-state">
+      <div class="empty-emoji">💸</div>
+      <div class="empty-t">No rates yet</div>
+      <div class="empty-s">Hit "Calculate My Rate" to get started!</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = h.map(x => `
+    <div class="hist-card">
+      <div class="hist-left">
+        <div class="hist-icon">${platIcon(x.platform)}</div>
+        <div>
+          <div class="hist-type">${x.typeLabel}</div>
+          <div class="hist-meta">${platLabel(x.platform)} &nbsp;•&nbsp; ${x.date}</div>
+        </div>
+      </div>
+      <div class="hist-rate">₹${fmtN(x.rate)}</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory() {
+  S.history = []; save(); renderHistory();
+}
+
+/* ══════════════════════════════════════════════════════════
+   CALCULATOR
+══════════════════════════════════════════════════════════ */
+// Platform pills in calc
+document.querySelectorAll('[data-cp]').forEach(p => {
+  p.addEventListener('click', () => {
+    document.querySelectorAll('[data-cp]').forEach(x => x.classList.remove('on'));
+    p.classList.add('on');
+    S.calc.platform    = p.dataset.cp;
+    S.calc.contentType = null;
+    S.calc.result      = null;
+    renderCtGrid();
+    renderRate();
+    save();
+  });
+});
+
+function refreshCalc() {
+  // Sync platform pill
+  document.querySelectorAll('[data-cp]').forEach(x => x.classList.remove('on'));
+  document.querySelector(`[data-cp="${S.calc.platform}"]`)?.classList.add('on');
+  // Sync addon toggles
+  ['exclusivity','usage','rush'].forEach(k => {
+    const id = {exclusivity:'excl',usage:'usage',rush:'rush'}[k];
+    document.getElementById('tog-'+id)?.classList.toggle('on', S.calc.addons[k]);
+  });
+  renderCtGrid();
+  renderRate();
+}
+
+function renderCtGrid() {
+  const types = TYPES[S.calc.platform];
+  document.getElementById('ct-grid').innerHTML = types.map(t => `
+    <div class="ct-card ${S.calc.contentType===t.id?'on':''}"
+         data-ct="${t.id}" onclick="selectCt('${t.id}')">
+      <div class="ct-icon">${t.icon}</div>
+      <div class="ct-name">${t.label}</div>
+      <div class="ct-desc">${t.desc}</div>
+    </div>
+  `).join('');
+}
+
+function selectCt(id) {
+  S.calc.contentType = id;
+  renderCtGrid();
+  renderRate();
+  save();
+}
+
+function toggleAddon(key) {
+  S.calc.addons[key] = !S.calc.addons[key];
+  const idMap = {exclusivity:'excl',usage:'usage',rush:'rush'};
+  document.getElementById('tog-'+idMap[key])?.classList.toggle('on', S.calc.addons[key]);
+  renderRate();
+  save();
+}
+
+function renderRate() {
+  const box = document.getElementById('rate-box');
+  const { platform, contentType, addons } = S.calc;
+  const { followers, engagement } = S.user;
+  const btn = document.getElementById('gen-btn');
+
+  if (!contentType) {
+    box.innerHTML = `<div class="rate-prompt">← Pick a content type to see your rate</div>`;
+    btn.style.opacity = '0.35';
+    btn.style.pointerEvents = 'none';
+    return;
+  }
+
+  const r = calcRate(platform, contentType, followers, engagement, addons);
+  S.calc.result = r;
+
+  const typeLabel = TYPES[platform].find(t=>t.id===contentType)?.label||contentType;
+  const mult = engMult(engagement);
+
+  box.innerHTML = `
+    <div class="rate-lbl">Recommended Rate</div>
+    <div class="rate-num">₹${fmtN(r.recommended)}</div>
+    <div class="rate-range">Range: <b>₹${fmtN(r.min)}</b> &nbsp;–&nbsp; <b>₹${fmtN(r.max)}</b></div>
+    <div class="rate-chips">
+      <div class="rate-chip">
+        <div class="rc-v">${fmtN(followers)}</div>
+        <div class="rc-l">Followers</div>
+      </div>
+      <div class="rate-chip">
+        <div class="rc-v accent">${engagement}%</div>
+        <div class="rc-l">Engagement</div>
+      </div>
+      <div class="rate-chip">
+        <div class="rc-v">${mult}×</div>
+        <div class="rc-l">Multiplier</div>
+      </div>
+    </div>
+  `;
+
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+
+  // Push to history
+  const today = new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+  S.history = (S.history||[]).filter(h=>!(h.platform===platform&&h.contentType===contentType));
+  S.history.push({ platform, contentType, typeLabel, rate:r.recommended, date:today });
+  if (S.history.length > 20) S.history.shift();
+  save();
+}
+
+/* ══════════════════════════════════════════════════════════
+   PROFILE
+══════════════════════════════════════════════════════════ */
+function refreshProfile() {
+  const u = S.user;
+  document.getElementById('p-avatar').textContent   = (u.name||'C').charAt(0).toUpperCase();
+  document.getElementById('p-name').textContent     = u.name||'Creator';
+  document.getElementById('p-handle').textContent   = u.handle ? `@${u.handle}` : 'No handle set';
+  document.getElementById('p-plat').innerHTML       = `${platIcon(u.platform)} ${platLabel(u.platform)}`;
+  document.getElementById('p-followers').textContent= fmtN(u.followers);
+  document.getElementById('p-eng').textContent      = `${u.engagement}%`;
+  document.getElementById('p-niche').textContent    = u.niche||'—';
+}
+
+let _editField = '';
+let _editNiche  = '';
+let _editPlat   = '';
+
+function openEdit(field) {
+  _editField = field;
+  _editNiche = S.user.niche;
+  _editPlat  = S.user.platform;
+  const title = document.getElementById('edit-title');
+  const body  = document.getElementById('edit-body');
+
+  const niches = ['Fashion','Tech','Food','Travel','Fitness','Beauty','Gaming','Finance','Lifestyle','Education'];
+  const platMap = ['instagram','youtube','tiktok','twitter'];
+
+  const configs = {
+    followers: {
+      title: 'Edit Followers',
+      html: `<div class="input-group">
+        <div class="label">Followers / Subscribers</div>
+        <input class="field" id="e-val" type="number" value="${S.user.followers}" inputmode="numeric" />
+      </div>
+      <button class="btn btn-primary mb16" onclick="saveEdit()">Save</button>`
+    },
+    engagement: {
+      title: 'Edit Engagement Rate',
+      html: `<div class="input-group">
+        <div class="label">Engagement Rate (%)</div>
+        <input class="field" id="e-val" type="number" value="${S.user.engagement}" step="0.1" inputmode="decimal" />
+        <div class="field-hint">💡 (Avg. Likes + Comments) ÷ Followers × 100</div>
+      </div>
+      <button class="btn btn-primary mb16" onclick="saveEdit()">Save</button>`
+    },
+    niche: {
+      title: 'Edit Niche',
+      html: `<div class="pill-group mb20" id="e-niches">
+        ${niches.map(n=>`<div class="pill ${S.user.niche===n?'on':''}" data-en="${n}" onclick="pickEditNiche(this,'${n}')">${n}</div>`).join('')}
+      </div>
+      <button class="btn btn-primary mb16" onclick="saveEdit()">Save</button>`
+    },
+    name: {
+      title: 'Edit Name & Handle',
+      html: `<div class="input-group">
+        <div class="label">Name</div>
+        <input class="field" id="e-name" type="text" value="${S.user.name}" />
+      </div>
+      <div class="input-group">
+        <div class="label">Handle</div>
+        <input class="field" id="e-handle" type="text" value="${S.user.handle}" placeholder="@yourhandle" />
+      </div>
+      <button class="btn btn-primary mb16" onclick="saveEdit()">Save</button>`
+    },
+    platform: {
+      title: 'Change Platform',
+      html: `<div class="plat-grid mb20" id="e-plats">
+        ${platMap.map(p=>`
+          <div class="plat-card ${S.user.platform===p?'on':''}" data-ep="${p}" onclick="pickEditPlat(this,'${p}')">
+            <div class="plat-icon">${platIcon(p)}</div>
+            <div class="plat-name">${platLabel(p)}</div>
+            <div class="plat-tick">✓</div>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-primary mb16" onclick="saveEdit()">Save</button>`
+    },
+  };
+
+  const cfg = configs[field];
+  if (!cfg) return;
+  title.textContent = cfg.title;
+  body.innerHTML = cfg.html;
+  document.getElementById('edit-overlay').classList.add('open');
+}
+
+function pickEditNiche(el, n) {
+  document.querySelectorAll('#e-niches .pill').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  _editNiche = n;
+}
+
+function pickEditPlat(el, p) {
+  document.querySelectorAll('#e-plats .plat-card').forEach(x=>x.classList.remove('on'));
+  el.classList.add('on');
+  _editPlat = p;
+}
+
+function saveEdit() {
+  if (_editField === 'followers') {
+    const v = parseInt(document.getElementById('e-val').value);
+    if (!v||v<1) { toast('⚠️ Invalid number'); return; }
+    S.user.followers = v;
+  } else if (_editField === 'engagement') {
+    const v = parseFloat(document.getElementById('e-val').value);
+    if (isNaN(v)||v<0) { toast('⚠️ Invalid rate'); return; }
+    S.user.engagement = v;
+  } else if (_editField === 'niche') {
+    S.user.niche = _editNiche;
+  } else if (_editField === 'name') {
+    const n = document.getElementById('e-name').value.trim();
+    if (!n) { toast('⚠️ Name cannot be empty'); return; }
+    S.user.name   = n;
+    S.user.handle = document.getElementById('e-handle').value.trim().replace(/^@/,'');
+  } else if (_editField === 'platform') {
+    S.user.platform  = _editPlat;
+    S.calc.platform  = _editPlat;
+    S.calc.contentType = null;
+    S.calc.result = null;
+  }
+  save(); refreshProfile(); refreshHome();
+  closeEdit(); toast('✓ Saved!');
+}
+
+function closeEdit() { document.getElementById('edit-overlay').classList.remove('open'); }
+
+function doReset() {
+  if (!confirm('Reset everything? All your data will be cleared.')) return;
+  localStorage.removeItem('bhav2');
+  S = deep(INIT);
+  document.getElementById('bottom-nav').style.display = 'none';
+  goTo('ob1');
+}
+
+/* ══════════════════════════════════════════════════════════
+   TEMPLATE MODAL
+══════════════════════════════════════════════════════════ */
+function openTemplate() {
+  document.getElementById('tmpl-overlay').classList.add('open');
+  document.getElementById('t-company').value = '';
+  document.getElementById('t-brief').value   = '';
+  renderTemplate();
+}
+
+function closeTemplate() { document.getElementById('tmpl-overlay').classList.remove('open'); }
+
+function renderTemplate() {
+  const company = document.getElementById('t-company').value.trim() || '[Brand Name]';
+  const brief   = document.getElementById('t-brief').value.trim();
+  const u  = S.user;
+  const c  = S.calc;
+  const r  = c.result;
+
+  if (!r || !c.contentType) {
+    document.getElementById('t-preview').textContent = 'Go back and calculate a rate first.';
+    return;
+  }
+
+  const typeLabel = TYPES[c.platform].find(t=>t.id===c.contentType)?.label || c.contentType;
+  const extras = [];
+  if (c.addons.exclusivity) extras.push('✓ Brand exclusivity (30 days)');
+  if (c.addons.usage)       extras.push('✓ Usage rights included');
+  if (c.addons.rush)        extras.push('✓ Rush delivery (within 48 hrs)');
+
+  const tmpl = `COLLABORATION RATE CARD
+━━━━━━━━━━━━━━━━━━━━━━━━
+
+Hi ${company} Team!
+
+Thanks for reaching out 🙌
+Here's my rate card for your reference:
+
+ABOUT ME
+────────
+Name      : ${u.name||'Creator'}
+Handle    : @${u.handle||'myhandle'}
+Platform  : ${platLabel(c.platform)}
+Followers : ${fmtN(u.followers)}
+Eng. Rate : ${u.engagement}%
+Niche     : ${u.niche||'Lifestyle'}${brief?`\nCampaign  : ${brief}`:''}
+
+DELIVERABLE & PRICING
+─────────────────────
+${typeLabel}  →  ₹${fmtN(r.recommended)}
+(Range: ₹${fmtN(r.min)} – ₹${fmtN(r.max)})
+
+WHAT'S INCLUDED
+───────────────
+✓ 1 ${typeLabel} featuring ${company}
+✓ On-brand caption + tags + CTA
+✓ Content delivered within 48-72 hrs
+✓ 1 round of free revisions${extras.length?'\n'+extras.join('\n'):''}
+
+PAYMENT TERMS
+─────────────
+→ 50% advance to confirm booking
+→ 50% on content delivery
+→ Preferred: UPI / Bank Transfer
+
+Let's make something 🔥 together!
+
+${u.name||'Creator'}
+@${u.handle||'myhandle'} | ${platLabel(c.platform)}`;
+
+  document.getElementById('t-preview').textContent = tmpl;
+}
+
+function copyTmpl() {
+  const text = document.getElementById('t-preview').textContent;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(()=>toast('✓ Copied to clipboard!')).catch(()=>fallbackCopy(text));
+  } else { fallbackCopy(text); }
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement('textarea');
+  ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+  document.body.appendChild(ta); ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  toast('✓ Copied!');
+}
+
+function shareTmpl() {
+  const text = document.getElementById('t-preview').textContent;
+  if (navigator.share) {
+    navigator.share({ title:'My Collab Rate', text }).catch(()=>{});
+  } else { copyTmpl(); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════════════ */
+function fmtN(n) {
+  if (!n && n!==0) return '—';
+  if (n >= 1e6)  return (n/1e6).toFixed(1).replace('.0','') + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1).replace('.0','') + 'K';
+  return n.toString();
+}
+
+const ICONS  = {instagram:'📸',youtube:'▶️',tiktok:'🎵',twitter:'𝕏'};
+const LABELS = {instagram:'Instagram',youtube:'YouTube',tiktok:'TikTok',twitter:'Twitter/X'};
+function platIcon(p)  { return ICONS[p]  || '📱'; }
+function platLabel(p) { return LABELS[p] || p; }
+
+let _toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>el.classList.remove('show'), 2600);
+}
+
+// Close modals on overlay click
+document.getElementById('tmpl-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('tmpl-overlay')) closeTemplate();
+});
+document.getElementById('edit-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('edit-overlay')) closeEdit();
+});
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════════════════ */
+load();
+if (S.done) {
+  setTimeout(() => goTo('home'), 1600);
+} else {
+  setTimeout(() => goTo('ob1'), 1800);
+}
+</script>
+</body>
+</html>
